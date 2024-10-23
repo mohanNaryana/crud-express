@@ -4,10 +4,14 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 app.use(express.json())
 
+const auth = require("./routes/auth.js")
+app.use("/",auth)
+
+
 
 app.get("/",async(req,res)=>{
     try{
-        const todo = await prisma.todos.findMany()
+        const todo = await prisma.Todo.findMany()
         res.status(201).json({
             todo
         })
@@ -23,7 +27,7 @@ app.post("/",async(req,res)=>{
     const { title } = req.body
 
     try{
-        const todo = await prisma.todos.create({
+        const todo = await prisma.Todo.create({
             data : {
                 title
             }
@@ -44,7 +48,7 @@ app.put("/:id",async(req,res)=>{
     const id = req.params.id
     const { completed } = req.body
     try{
-        const response = await prisma.todos.update({
+        const response = await prisma.Todo.update({
             where : {
                 id
             },
@@ -67,7 +71,7 @@ app.put("/:id",async(req,res)=>{
 app.delete("/:id", async (req, res) => {
     const id = parseInt(req.params.id); 
     try {
-        const response = await prisma.todos.delete({
+        const response = await prisma.Todo.delete({
             where: {
                 id: id,
             },
@@ -81,5 +85,5 @@ app.delete("/:id", async (req, res) => {
     }
 });
 
-const port = 3000
+const port = 5000
 app.listen(port)
