@@ -9,11 +9,11 @@ const jwtSecret = "hi";
 
 // Signup route
 router.post("/signup", async (req, res) => {
-    const { username, password } = req.body;  // Corrected res.body to req.body
-    const hashedPassword = await bcrypt.hash(password, 10);  // Await bcrypt.hash
+    const { username, password } = req.body;  
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
     try {
-        const user = await prisma.user.create({  // Prisma model should match your schema
+        const user = await prisma.user.create({  
             data: {
                 username: username,
                 password: hashedPassword
@@ -68,7 +68,7 @@ router.post("/signin", async (req, res) => {
     }
 });
 
-// Authentication middleware
+
 function authenticateToken(req, res, next) {
     const token = req.headers["authorization"];
 
@@ -91,5 +91,5 @@ function authenticateToken(req, res, next) {
     });
 }
 
-module.exports = router;   // Export the router for routes
+module.exports = router;   
 module.exports.authenticateToken = authenticateToken;
