@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 app.use(express.json())
 
 const auth = require("./routes/auth.js")
+const authenticateToken = require("./routes/auth.js").authenticateToken;
 app.use("/",auth)
 
 
@@ -23,13 +24,16 @@ app.get("/",async(req,res)=>{
     }
 })
 
-app.post("/",async(req,res)=>{
-    const { title } = req.body
+app.post("/",authenticateToken, async(req,res)=>{
+    const { title  } = req.body
+    const userid = req.user.id
+    
 
     try{
         const todo = await prisma.Todo.create({
             data : {
-                title
+                title,
+                userid 
             }
         })
         res.status(201).json({

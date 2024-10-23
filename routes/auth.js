@@ -9,24 +9,24 @@ const jwtSecret = "hi";
 
 // Signup route
 router.post("/signup", async (req, res) => {
-    const { username, password } = req.body;  // Changed res.body to req.body
-    const hashedpassword = await bcrypt.hash(password, 10);  // Await bcrypt.hash
+    const { username, password } = req.body;  // Corrected res.body to req.body
+    const hashedPassword = await bcrypt.hash(password, 10);  // Await bcrypt.hash
 
     try {
-        const response = await prisma.user.create({  // Prisma model should match your schema (user, not User)
+        const user = await prisma.user.create({  // Prisma model should match your schema
             data: {
                 username: username,
-                password: hashedpassword
+                password: hashedPassword
             }
         });
         res.json({
-            msg: "registered successfully",
-            response
+            msg: "Registered successfully",
+            user
         });
     } catch (error) {
-        res.json({
-            msg: "error adding user",
-            error
+        res.status(500).json({  
+            msg: "Error adding user",
+            error: error.message
         });
     }
 });
@@ -36,36 +36,60 @@ router.post("/signin", async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const response = await prisma.user.findUnique({
+        const user = await prisma.user.findFirst({
             where: {
                 username: username
             }
         });
-
-        if (!response) {
+        console.log(user)
+        if (!user) {
             return res.status(404).json({
-                msg: "user not found"
+                msg: "User not found"
             });
         }
 
-        const validatepassword = await bcrypt.compare(password, response.password);  // Compare with response.password
-        if (!validatepassword) {
-            return res.status(404).json({
-                msg: "incorrect password"
+        const validatePassword = await bcrypt.compare(password, user.password);  
+        if (!validatePassword) {
+            return res.status(401).json({  
+                msg: "Incorrect password"
             });
         }
 
-        const token = jwt.sign({ username }, jwtSecret, { expiresIn: '1h' });
+        const token = jwt.sign({id : user.id , username }, jwtSecret);
         res.json({
-            msg: "logged in successfully",
+            msg: "Logged in successfully",
             token
         });
     } catch (error) {
-        res.json({
-            msg: "unable to login",
-            error
+        res.status(500).json({
+            msg: "Unable to login",
+            error: error.message
         });
     }
 });
 
-module.exports = router;
+// Authentication middleware
+function authenticateToken(req, res, next) {
+    const token = req.headers["authorization"];
+
+    if (!token) {
+        return res.status(401).json({
+            msg: "Access denied"
+        });
+    }
+
+    jwt.verify(token, jwtSecret, (err, user) => {
+        if (err) {
+            return res.status(403).json({  
+                msg: "Invalid token"
+            });
+        }
+
+        req.user = user;  
+        console.log(req.user)
+        next();  
+    });
+}
+
+module.exports = router;   // Export the router for routes
+module.exports.authenticateToken = authenticateToken;
