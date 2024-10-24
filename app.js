@@ -10,9 +10,13 @@ app.use("/",auth)
 
 
 
-app.get("/",async(req,res)=>{
+app.get("/",authenticateToken,async(req,res)=>{
     try{
-        const todo = await prisma.Todo.findMany()
+        const todo = await prisma.Todo.findMany({
+            where : {
+                userid : req.user.id
+            }
+        })
         res.status(201).json({
             todo
         })
@@ -27,6 +31,7 @@ app.get("/",async(req,res)=>{
 app.post("/",authenticateToken, async(req,res)=>{
     const { title  } = req.body
     const userid = req.user.id
+    console.log(userid)
     
 
     try{
@@ -48,7 +53,7 @@ app.post("/",authenticateToken, async(req,res)=>{
     }
 })
 
-app.put("/:id",async(req,res)=>{
+app.put("/:id",authenticateToken, async(req,res)=>{
     const id = req.params.id
     const { completed } = req.body
     try{
@@ -72,7 +77,7 @@ app.put("/:id",async(req,res)=>{
     }
 })
 
-app.delete("/:id", async (req, res) => {
+app.delete("/:id",authenticateToken, async (req, res) => {
     const id = parseInt(req.params.id); 
     try {
         const response = await prisma.Todo.delete({
@@ -80,7 +85,7 @@ app.delete("/:id", async (req, res) => {
                 id: id,
             },
         });
-        res.status(204).json({ msg: "Deleted successfully" }); 
+        res.status(204).json({ msg: "Deleted successfully",response }); 
     } catch (error) {
         res.status(500).json({
             msg: "Error in deleting todo",
