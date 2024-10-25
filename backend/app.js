@@ -2,7 +2,10 @@ const express = require('express')
 const app = express()
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+const cors = require("cors"); 
+const corsMiddleware = cors();
 app.use(express.json())
+app.use(corsMiddleware)
 
 const auth = require("./routes/auth.js")
 const authenticateToken = require("./routes/auth.js").authenticateToken;
