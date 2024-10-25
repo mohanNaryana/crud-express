@@ -6,6 +6,7 @@ app.use(express.json())
 
 const auth = require("./routes/auth.js")
 const authenticateToken = require("./routes/auth.js").authenticateToken;
+
 app.use("/",auth)
 
 
